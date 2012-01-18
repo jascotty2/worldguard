@@ -33,9 +33,11 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Result;
+import org.bukkit.event.Event.Type;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
@@ -95,45 +97,20 @@ public class WorldGuardPlayerListener extends PlayerListener {
      * Register events.
      */
     public void registerEvents() {
-//        PluginManager pm = plugin.getServer().getPluginManager();
+        final PluginManager pm = plugin.getServer().getPluginManager();
+        pm.registerEvents(this, plugin);
 
-        registerEvent("PLAYER_INTERACT", Priority.High);
-        registerEvent("PLAYER_DROP_ITEM", Priority.High);
-        registerEvent("PLAYER_PICKUP_ITEM", Priority.High);
-        registerEvent("PLAYER_JOIN", Priority.Normal);
-        registerEvent("PLAYER_LOGIN", Priority.Normal);
-        registerEvent("PLAYER_QUIT", Priority.Normal);
-        registerEvent("PLAYER_BUCKET_FILL", Priority.High);
-        registerEvent("PLAYER_BUCKET_EMPTY", Priority.High);
-        registerEvent("PLAYER_RESPAWN", Priority.Highest);
-        registerEvent("PLAYER_ITEM_HELD", Priority.High);
-        registerEvent("PLAYER_BED_ENTER", Priority.High);
-        registerEvent("PLAYER_COMMAND_PREPROCESS", Priority.Lowest);
         if (plugin.getGlobalStateManager().usePlayerMove) {
-            registerEvent("PLAYER_MOVE", Priority.High);
-        }
-    }
-
-    /**
-     * Register an event, but not failing if the event is not implemented.
-     *
-     * @param typeName
-     * @param priority
-     */
-    private void registerEvent(String typeName, Priority priority) {
-        try {
-            Event.Type type = Event.Type.valueOf(typeName);
-            PluginManager pm = plugin.getServer().getPluginManager();
-            pm.registerEvent(type, this, priority, plugin);
-        } catch (IllegalArgumentException e) {
-            logger.info("WorldGuard: Unable to register missing event type " + typeName);
+            //EventExecutor executor = null;
+            //pm.registerEvent(PlayerMoveEvent.class, this, EventPriority.HIGH, executor, plugin);
+            pm.registerEvent(Type.PLAYER_MOVE, this, PlayerMoveEvent.Priority.High, plugin);
         }
     }
 
     /**
      * Called when a player joins a server.
      */
-    @Override
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
@@ -187,7 +164,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a player leaves a server.
      */
-    @Override
+    @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
@@ -232,7 +209,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a player interacts with an item.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
@@ -268,7 +245,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
      *
      * @param event
      */
-    @Override
+    //@EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
@@ -865,7 +842,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a player attempts to drop an item.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         if (event.isCancelled()) {
             return;
@@ -889,7 +866,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a player attempts to pickup an item.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerPickupItem(PlayerPickupItemEvent event) {
         if (event.isCancelled()) {
             return;
@@ -913,7 +890,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a bucket is filled.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerBucketFill(PlayerBucketFillEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
@@ -948,7 +925,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a bucket is empty.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
@@ -976,7 +953,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a player is respawned.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         Location location = player.getLocation();
@@ -1011,7 +988,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a player changes their held item.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
     public void onItemHeldChange(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
         
@@ -1032,7 +1009,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called when a player enters a bed.
      */
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerBedEnter(PlayerBedEnterEvent event) {
         if (event.isCancelled()) {
             return;
@@ -1061,7 +1038,7 @@ public class WorldGuardPlayerListener extends PlayerListener {
     /**
      * Called on command run.
      */
-    @Override
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
